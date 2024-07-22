@@ -179,3 +179,142 @@ select e.ename as 사원명, e.job "담당 업무", e.sal as 급여
     
 select * from emp
 select * from dept;
+
+
+CREATE OR REPLACE PROCEDURE usp_prod_totalstock_update
+(
+    v_prod_id IN prod.prod_id%TYPE,
+    v_qty IN prod.prod_totalstock%TYPE)
+IS
+BEGIN
+    UPDATE prod
+    SET prod_totalstock = prod_totalstock + v_qty
+    WHERE prod_id = v_prod_id;
+    DBMS_OUTPUT.PUT_LINE('정상적으로 업데이트 되었습니다.');
+    COMMIT;
+    
+    EXCEPTION
+    WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('예외 발생:' || SQLERRM);
+    ROLLBACK;
+    END;
+/
+SELECT prod_id, prod_totalstock
+    FROM prod
+    WHERE prod_id = 'P102000006';
+/
+EXECUTE usp_prod_totalstock_update('P102000006', -300);
+/
+
+DECLARE
+    v_num NUMBER :=37;
+BEGIN
+    DBMS_OUTPUT.ENABLE;
+    
+IF MOD(v_num, 2) = 0 THEN
+    DBMS_OUTPUT.PUT_LINE(v_num || ' 는 짝수');
+ELSE
+    DBMS_OUTPUT.PUT_LINE(v_num || ' 는 홀수');
+    END IF;
+END;
+/ -- PL/SQL문장의 끝을 표시하고 Ctrl+Enter 키가 작용하도록 함
+
+DECLARE
+    v_num NUMBER :=96;
+BEGIN
+    DBMS_OUTPUT.ENABLE;
+    IF v_num > 90 THEN
+        DBMS_OUTPUT.PUT_LINE('수');
+    ELSIF v_num > 80 THEN
+        DBMS_OUTPUT.PUT_LINE('우');
+    ELSIF v_num > 70 THEN
+         DBMS_OUTPUT.PUT_LINE('미');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('분발합시다.');
+    END IF;
+END;
+/
+
+DECLARE
+    v_avg_sale PROD.PROD_SALE%TYPE;     -- NUMBER(10,0)
+    v_sale NUMBER := 500000;
+BEGIN
+    DBMS_OUTPUT.ENABLE;
+    
+    SELECT AVG(prod_sale) INTO v_avg_sale FROM prod;
+    
+    IF v_sale < v_avg_sale THEN
+        DBMS_OUTPUT.PUT_LINE('평균 단가가 500,000초과입니다.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('평균 단가가 500,000이하입니다.');
+    END IF;
+END;
+/
+
+ -- 오류 (수정 필요)
+--DECLARE
+--    V_MEM_ID VARCHAR2(10) := 'e001';
+--    V_MEM_MILEAGE MEMBER.MEM_MILEAGE%TYPE;
+--    V_MEM_NAME MEMBER.MEM_NAME%TYPE;
+--    V_MILE NUMBER :=5000;
+--BEGIN
+--    DBMS_OUTPUT.ENABLE;
+--    
+--        SELECT MEM_MILEAGE, MEM_NAME
+--        INTO    V_MEM_MILEAGE, V_MEM_NAME
+--        FROM MEMBER
+--        WHERE = MEM_ID = V_MEM_ID;
+--        
+--        IF V_MILE < V_MEM_MILEAGE THEN
+--            DBMS_OUTPUT.PUT_LINE('VIP 회원(' || V_MEM_NAME || ', ' || V_MEM_MILEAGE || ')');
+--        ELSE
+--            DBMS_OUTPUT.PUT_LINE('일반회원(' || V_MEM_NAME || ', ' || V_MEM_MILEAGE || ')');
+--        END IF;
+--END;
+/
+
+DECLARE
+    V_NUM   NUMBER := 100;
+BEGIN
+    V_NUM := TRUNC(V_NUM / 10);
+    
+    CASE V_NUM
+        WHEN 9, 10 THEN
+            DBMS_OUTPUT.PUT_LINE('수' || '(' || V_NUM || ')');
+        WHEN 8 THEN
+            DBMS_OUTPUT.PUT_LINE('우' || '(' || V_NUM || ')');
+        WHEN 7 THEN
+            DBMS_OUTPUT.PUT_LINE('미' || '(' || V_NUM || ')');
+        WHEN 6 THEN
+            DBMS_OUTPUT.PUT_LINE('양' || '(' || V_NUM || ')');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('분발합시다.');
+        END CASE;
+    END;
+/
+
+DECLARE
+    V_SUM   NUMBER :=0;
+    V_VAR   NUMBER :=1;
+BEGIN
+    WHILE V_VAR <= 10 LOOP
+        V_SUM := V_SUM + V_VAR;
+        V_VAR := V_VAR + 1;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('1부터 10까지의 합 =' || V_SUM);
+END;
+/
+
+DECLARE
+    V_ID NUMBER :=1;
+    V_ID2 NUMBER := 10;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('');
+    WHILE V_ID < 20 LOOP
+        DBMS_OUTPUT.PUT(RPAD('a', v_id2, ' '));
+        DBMS_OUTPUT.PUT_LINE(RPAD('b', V_ID, '*'));
+        V_ID := V_ID + 2;
+        V_ID2 := V_ID2 -1;
+        END LOOP;
+    END;
+/
