@@ -321,10 +321,528 @@ DECLARE
 BEGIN
     DBMS_OUTPUT.PUT_LINE('');
     WHILE V_ID < 20 LOOP
-        DBMS_OUTPUT.PUT(RPAD('a', v_id2, ' '));
-        DBMS_OUTPUT.PUT_LINE(RPAD('b', V_ID, '*'));
+        DBMS_OUTPUT.PUT(RPAD(' ', v_id2, ' '));
+        DBMS_OUTPUT.PUT_LINE(RPAD('*', V_ID, '*'));
         V_ID := V_ID + 2;
         V_ID2 := V_ID2 -1;
         END LOOP;
     END;
 /
+set serveroutput on;
+
+DECLARE
+  V_I NUMBER :=2;
+  V_J NUMBER :=1;
+BEGIN
+    WHILE V_I < 10 LOOP
+        DBMS_OUTPUT.PUT_LINE('                    ');
+        DBMS_OUTPUT.PUT_LINE('==========');
+        DBMS_OUTPUT.PUT_LINE(V_I || ' 단 ');
+        DBMS_OUTPUT.PUT_LINE('==========');
+        
+        V_J :=1;
+        
+        WHILE V_J < 10 LOOP
+            DBMS_OUTPUT.PUT_LINE(V_I || 'X' || V_J || '=' || V_I * V_J);
+            
+            V_J := V_J + 1;
+        END LOOP;
+        
+        V_I :=V_I + 1;
+    END LOOP;
+END;
+/
+
+DECLARE
+    V_ADD NUMBER(5)  := 1000;
+    V_CODE CHAR(4) :='';
+    V_ID NUMBER(5);
+BEGIN
+    SELECT MAX(LPROD_ID) INTO V_ID FROM LPROD;
+    WHILE V_ADD <= 1005 LOOP
+     V_ADD := V_ADD + 1;
+     V_ID := V_ID + 1;
+     V_CODE := 'TT' || SUBSTR(TO_CHAR(V_ADD), -2);
+    INSERT INTO LPROD(LPROD_ID, LPROD_GU, LPROD_NM)
+VALUES(V_ID, V_CODE, 'LOOP TEST');
+     IF SQL%FOUND THEN
+         DBMS_OUTPUT.PUT_LINE('신규코드' || V_CODE || '가 추가되었음');
+     END IF;
+    END LOOP;
+END;
+/
+
+SELECT * FROM LPROD;
+
+-- 오류 (수정 필요)
+DECLARE
+v_sum INT :=0;
+v_var Int :=1;
+BEGIN
+<<mylable>>
+    v_sum := v_sum + v_var;
+    v_var := v_var + 1;
+    IF v_var <= 10 THEN;
+     GOTO mylabel;
+    END IF
+    DBMS_OUTPUT.PUT_LINE(v_sum);
+    DBMS_OUTPUT.PUT_LINE(v_var);
+END;
+/
+
+DECLARE
+    v_sum NUMBER :=0;
+    v_var NUMBER :=1;
+BEGIN
+    LOOP
+        v_sum := v_sum + v_var;
+        v_var := v_var + 1;
+        DBMS_OUTPUT.PUT_LINE('1부터 10까지의 합 = ' || v_sum);
+        if v_var > 10 THEN
+            EXIT;
+        END IF;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('1부터 10까지의 합 = ' || v_sum);
+END;
+
+BEGIN
+    FOR i IN 1..10 LOOP
+        DBMS_OUTPUT.PUT_LINE( 'i = '|| i );
+    END LOOP;
+END;
+
+DECLARE
+    TYPE starcraft IS VARRAY(20) OF VARCHAR2(12); -- Type 선언
+    v_star starcraft;
+BEGIN
+    v_star :=starcraft('Terran', 'Profork');
+    v_star.EXTEND;
+    v_star(3) := 'Zerg';
+    DBMS_OUTPUT.PUT_LINE('스타크래프트 김씨 종족 : ' || v_star.COUNT);
+    FOR i IN v_star.FIRST..v_star.LAST LOOP
+        DBMS_OUTPUT.PUT_LINE( i || '번째 종족 : ' || v_star(i));
+    END LOOP;
+END;
+
+DECLARE
+    TYPE lprod_nm_table IS TABLE OF VARCHAR2(40)
+        INDEX BY PLS_INTEGER;
+    t_lprod_nm lprod_nm_table;
+BEGIN
+    FOR I_list IN (SELECT lprod_id, lprod_nm FROM lprod) LOOP
+    t_lprod_nm(I_list.lprod_id) := I_list.lprod_nm;
+    DBMS_OUTPUT.PUT_LINE(I_list.lprod_id || '=' || I_list.lprod_nm );
+END LOOP;
+
+DBMS_OUTPUT.PUT_LINE('상품분류 갯수 =' || t_lprod_nm.COUNT);
+FOR i IN t_lprod_nm.FIRST..t_lprod_nm.LAST LOOP
+    IF t_lprod_nm.EXISTS(i) THEN
+        DBMS_OUTPUT.PUT_LINE(i || ' ' || t_lprod_nm(i));
+    END IF;
+END LOOP;
+END;
+
+DECLARE
+    v_name varchar2(20);
+BEGIN
+    SELECT lprod_nm INTO v_name FROM lprod WHERE lprod_gu = 'P201';
+    DBMS_OUTPUT.PUT_LINE('분류명 =' || v_name);
+    
+ EXCEPTION 
+--    WHEN NO_DATA_FOUND THEN
+--        DBMS_OUTPUT.PUT_LINE('해당 정보가 없습니다.');
+--    WHEN TOO_MANY_ROWS THEN
+--        DBMS_OUTPUT.PUT_LINE('한개 이상의 값이 나왔습니다.');
+--    WHEN OTHERS THEN
+--        DBMS_OUTPUT.PUT_LINE('기타 에러 :' || SQLERRM);
+END;
+
+DECLARE
+    exp_reference EXCEPTION;
+    PRAGMA EXCEPTION_INIT(exp_reference, -2292);
+BEGIN
+    DELETE FROM lprod WHERE lprod_gu = 'P403';
+    DBMS_OUTPUT.PUT_LINE('분류 삭제');
+EXCEPTION
+    WHEN exp_reference THEN
+        DBMS_OUTPUT.PUT_LINE('삭제 불가: '|| SQLERRM);
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE(SQLCODE || ' ' || SQLERRM);
+END;
+
+SELECT * FROM lprod;
+
+ACCEPT p_lgu PROMPT '등록하려는 분류코드 입력 :'
+DECLARE
+    exp_lprod_gu EXCEPTION;
+    v_lgu VARCHAR2(10) := UPPER('&p_lgu');
+BEGIN
+    IF v_lgu IN ('P101', 'P102', 'P201', 'P202') THEN
+        RAISE exp_lprod_gu;
+    END IF;
+    DBMS_OUTPUT.PUT_LINE(v_lgu || '는 등록 가능');
+EXCEPTION
+    WHEN exp_lprod_gu THEN
+        DBMS_OUTPUT.PUT_LINE(v_lgu || '는 이미 등록된 코드입니다.');
+END;
+
+DECLARE
+    v_prod VARCHAR2(30);
+    v_qty NUMBER(10,0);
+    
+    CURSOR UpRemain_cur IS
+        SELECT buy_prod, SUM(buy_qty) FROM buyprod
+        WHERE EXTRACT(YEAR FROM buy_date) = 2023
+        GROUP BY buy_prod ORDER BY buy_prod ASC;
+    BEGIN
+        OPEN UpRemain_cur;
+        FETCH UpRemain_cur INTO v_prod, v_qty;
+        WHILE (UpRemain_cur%FOUND) LOOP
+            DBMS_OUTPUT.PUT_LINE(UpRemain_cur%ROWCOUNT || '번째 상품=' || v_prod || '입고수량= ' ||  v_qty || '입니다.');
+            FETCH UpRemain_cur INTO v_prod, v_qty;
+        END LOOP;
+        CLOSE UpRemain_cur;
+    END;
+
+DECLARE
+    v_name VARCHAR2(30);
+    v_mileage NUMBER(10);
+    
+    CURSOR member_cur (v_job VARCHAR2) IS
+        SELECT mem_name, mem_mileage FROM member
+        WHERE mem_job = v_job
+        ORDER BY mem_name ASC;
+    BEGIN  
+        OPEN member_cur('주부');
+        LOOP
+            FETCH member_cur INTO v_name, v_mileage;
+            EXIT WHEN member_cur%NOTFOUND;
+            DBMS_OUTPUT.PUT_LINE(member_cur%ROWCOUNT || '번째' || v_name || ', ' || v_mileage);
+        END LOOP;
+        CLOSE member_cur;
+    END;
+/
+
+set verify off
+set echo off
+
+-- 직업을 입력받아서 FOR LOOP를 이용하는 CURSOR
+ACCEPT p_job PROMPT '직업을 입력하세요:'
+
+DECLARE
+    v_name VARCHAR2(30);
+    v_mileage NUMBER(10);
+    CURSOR member_cur IS
+        SELECT mem_name, mem_mileage
+            FROM member
+        WHERE mem_job = '&p_job'
+        ORDER BY mem_name ASC;
+    BEGIN
+    
+        FOR mem_rec IN member_cur LOOP
+            DBMS_OUTPUT.PUT_LINE(member_cur%ROWCOUNT || '번째' || mem_rec.mem_name || ', ' || mem_rec.mem_mileage);
+        END LOOP;
+    END;
+/
+
+--------------------------------- 프로시저 공부하기
+
+CREATE OR REPLACE PROCEDURE usp_prod_totalstock_update
+(
+    v_prod_id IN prod.prod_id%TYPE,
+    v_qty IN prod.prod_totalstock%TYPE)
+IS
+BEGIN
+    UPDATE prod
+    SET prod_totalstock = prod_totalstock + v_qty
+    WHERE prod_id = v_prod_id;
+    DBMS_OUTPUT.PUT_LINE('정상적으로 업데이트 되었습니다.');
+    COMMIT;
+    
+    EXCEPTION
+    WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('예외 발생:' || SQLERRM);
+    ROLLBACK;
+    END;
+/
+
+SELECT prod_id, prod_totalstock
+    FROM prod
+    WHERE prod_id = 'P102000006';
+/
+EXECUTE usp_prod_totalstock_update('P102000006', 500);
+/
+
+select * from prod;
+
+CREATE OR REPLACE PROCEDURE usp_MemberID
+(
+    p_mem_id In member.mem_id%TYPE,
+    p_mem_name OUT member.mem_name%TYPE,
+    p_mem_like OUT member.mem_like%TYPE)
+IS
+BEGIN
+    SELECT mem_name, mem_like
+        INTO p_mem_name, p_mem_like
+    FROM member
+WHERE mem_id = p_mem_id;
+END;
+/
+
+VAR mem_name VARCHAR2(20);
+VAR mem_like VARCHAR2(20);
+EXECUTE usp_MemberID ('f001', :mem_name, :mem_like);
+PRINT mem_name;
+PRINT mem_like;
+/
+
+CREATE OR REPLACE PROCEDURE usp_MemberCartTop
+(
+    p_year  IN VARCHAR2,
+    p_amt   OUT NUMBER,
+    p_mem_name  OUT member.mem_name%TYPE
+    )
+IS
+    v_year VARCHAR(5);
+    
+    -- 핵심(이해하기)
+BEGIN
+    v_year:= (p_year || '%');
+    SELECT mem_name, mem_amt INTO p_mem_name, p_amt
+    FROM (
+    SELECT mem_name, SUM(prod_price * cart_qty) mem_amt
+        FROM member, cart, prod
+        WHERE cart_no LIKE v_year
+            AND cart_member = mem_id
+            AND cart_prod = prod_id
+        GROUP BY mem_name
+        ORDER BY SUM(prod_price * cart_qty) DESC
+        )
+        WHERE ROWNUM <= 1;
+    END;
+/
+
+VAR send_member VARCHAR2;
+VAR send_amt NUMBER;
+EXEC usp_MemberCartTop('2023', :send_amt, :send_member);
+PRINT send_member;
+PRINT send_amt;
+
+CREATE OR REPLACE PROCEDURE usp_prod_info
+(
+    v_prod_id   IN prod.prod_id%TYPE,
+    p_yyyymm    IN VARCHAR2,
+    p_inqty     OUT NUMBER,
+    p_outqty        OUT NUMBER
+    )
+IS
+    v_yyyymm VARCHAR2(7);
+BEGIN
+    v_yyyymm := (p_yyyymm || '%');
+SELECT NVL(SUM(buy_qty), 0) into p_inqty
+    FROM buyprod
+    WHERE to_char(buy_date, 'YYYYMMDD') LIKE v_yyyymm AND buy_prod = v_prod_id
+    GROUP BY buy_prod;
+SELECT nvl(sum(cart_qty),0) into p_outqty
+    FROM cart
+    WHERE cart_no LIKE v_yyyymm AND cart_prod = v_prod_id
+    GROUP BY cart_prod;
+END;
+/
+
+DECLARE
+send_inqty NUMBER;
+send_outqty NUMBER;
+BEGIN
+    usp_prod_info('P101000001', '202304', send_inqty, send_outqty);
+    DBMS_OUTPUT.PUT_LINE('*입고량 => ' || send_inqty);
+    DBMS_OUTPUT.PUT_LINE('*출고량 => ' || send_outqty);
+END;
+/ 
+
+SELECT cart_no, cart_prod, cart_member,
+    (SELECT mem_name FROM member WHERE mem_id = cart_member)
+    FROM cart
+    WHERE cart_no = '2023040100001';
+    
+CREATE OR REPLACE FUNCTION fn_memName
+    (p_mem_id IN VARCHAR2)
+    
+    RETURN VARCHAR2
+IS
+    r_name VARCHAR2(30);
+BEGIN
+    SELECT mem_name INTO r_name FROM member
+    WHERE mem_id = p_mem_id;
+    RETURN r_name;
+    
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('예외 발생:' || SQLERRM);
+        RETURN null;
+    END;
+    
+VAR m_name VARRCHAR2
+EXECUTE :m_name := fn_memName('a001');
+PRINT m_name
+
+DECLARE
+    m_name VARCHAR2(30);
+BEGIN
+    m_name := fn_memName('a001');
+    DBMS_OUTPUT.PUT_LINE('회원명 => ' || m_name);
+END;
+
+SELECT cart_no, cart_prod, cart_member, fn_memName(cart_member)
+    FROM cart
+    WHERE cart_no = '2023040100001';
+    
+1. 파일 이름으로 트리거 작성
+CREATE OR REPLACE TRIGGER TG_LPROD_IN
+AFTER INSERT
+ON LPROD
+BEGIN
+DBMS_OUTPUT.PUT_LINE('박승민 상품분류가 추가되었습니다.');
+END;
+2. 만들어진 트리거 확인
+SELECT TRIGGER_NAME FROM USER_TRIGGERS;
+
+3. 상품분류 테이블에 LOW를 추가
+INSERT INTO LPROD (LPROD_ID, LPROD_GU, LPROD_NM)
+VALUES (
+    (SELECT NVL(MAX(LPROD_ID), 0) + 1 FROM LPROD),
+    (SELECT 'P' || TO_CHAR(NVL(SUBSTR(MAX(LPROD_GU), 2), '0') + 1) FROM LPROD),
+    '트리거추가값1'
+);
+    
+    SELECT * FROM LPROD;
+    
+CREATE TABLE EMP01(
+    EMPNO NUMBER(4) PRIMARY KEY,
+    EMPNAME VARCHAR2(20),
+    EMPJOB VARCHAR2(30));
+    
+CREATE TABLE SAL01(
+    SALNO NUMBER(4) PRIMARY KEY,
+    SAL NUMBER(7,2),
+    EMPNO NUMBER(4) REFERENCES EMP01));
+
+CREATE SEQUENCE SAL01_SALNO_SEQ;
+
+SELECT * FROM EMP01;
+
+
+INSERT INTO EMP01 VALUES(1, '전수빈', '프로그래머');
+INSERT INTO EMP01 VALUES(2, '전수빈', '프로그래머');
+INSERT INTO EMP01 VALUES(3, '전수빈', '프로그래머');
+
+
+CREATE OR REPLACE TRIGGER TRG_02
+AFTER DELETE ON EMP01
+FOR EACH ROW
+BEGIN
+DELETE FROM SAL01 WHERE EMPNO=:old.EMPNO;
+END;
+
+DELECT FROM EMP01 WHERE EMPNO=2;
+
+SELECT * FROM EMP01;
+
+240806
+INSERT 문
+INSERT INTO CHAT
+VALUES('a001', 'b001', '메세지', 'F');
+
+SELECT 문
+SELECT  * FROM CHAT
+WHERE USER2 = 'b001'
+AND reception= 'F';
+ 
+ UPDATE 문
+ UPDATE CHAT
+ SET RECEPTION = 'T'
+ WHERE USER2 = 'b001';
+
+240819
+MERGE INTO YES24_BOOK A
+    USING YES24_BOOK B
+    ON (A.ISBN13 = B.ISBN13)
+WHEN NOT MATCHED THEN
+    INSERT 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?);
+
+SELECT * FROM YES24_BOOK;
+
+SELECT 
+    'private '||
+   DECODE( DATA_TYPE , 'NUMBER', 'int ', 'String ' )||
+    LOWER(COLUMN_NAME)||';'
+FROM COLS
+WHERE TABLE_NAME = 'PROD'
+ORDER BY COLUMN_ID;
+
+240822
+SELECT *
+FROM MEMBER
+WHERE ID = 'a001'
+AND PW = 'java';
+
+SELECT 
+    'private '||
+   DECODE( DATA_TYPE , 'NUMBER', 'int ', 'String ' )||
+    LOWER(COLUMN_NAME)||';'
+FROM COLS
+WHERE TABLE_NAME = 'MEMBER'
+ORDER BY COLUMN_ID;
+
+SELECT *
+FROM WEATHER
+WHERE CITY_NO = 1 AND TIME = '12:00';
+
+INSERT INTO WEATHER
+VALUES(?, ?, ?, ?, ?, ?);
+
+240828
+목록 추가
+INSERT INTO HAM_SET
+SELECT (SELECT MAX(SET_NO) FROM HAM_SET) + ROWNUM,
+            MENU_NAME, 5
+FROM HAM_MENU;
+
+
+목록 조회
+SELECT S.SET_NO, S.SET_NAME, M.MENU_NAME, M.MENU_PRICE
+FROM HAM_SET S, HAM_SET_MENU SM, HAM_MENU M
+WHERE S.SET_NO = SM.SET_NO
+AND SM.MENU_NO = M.MENU_NO
+AND S.GROUP_NO = 4
+ORDER BY S.SET_NO;
+
+
+목록 합치기
+SELECT S.SET_NO, S.SET_NAME, LISTAGG( M.MENU_NAME, ', ') SINGLE_LIST , SUM(M.MENU_PRICE) PRICE
+FROM HAM_SET S, HAM_SET_MENU SM, HAM_MENU M
+WHERE S.SET_NO = SM.SET_NO
+AND SM.MENU_NO = M.MENU_NO
+AND S.GROUP_NO = 4
+GROUP BY S.SET_NO, S.SET_NAME
+ORDER BY S.SET_NO;
+
+
+목록 조회 오류
+SELECT MENU_NO, MENU_NAME, MENU_PRICE, GROUP_NAME
+FROM HAM_MENU M, HAM_MENU_GROUP MG
+WHERE M.GROUP_NO = MG.GROUP_NO;
+
+
+VO
+SELECT 
+    'private '||
+   DECODE( DATA_TYPE , 'NUMBER', 'int ', 'String ' )||
+    LOWER(COLUMN_NAME)||';'
+FROM COLS
+WHERE TABLE_NAME = 'HAM_MENU'
+ORDER BY COLUMN_ID;
+
+SELECT MENU_NO, MENU_NAME, MENU_PRICE
+FROM    HAM_MENU M;
