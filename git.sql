@@ -846,3 +846,32 @@ ORDER BY COLUMN_ID;
 
 SELECT MENU_NO, MENU_NAME, MENU_PRICE
 FROM    HAM_MENU M; 
+
+240829
+코드조각
+SELECT 
+    'private '||
+   DECODE( DATA_TYPE , 'NUMBER', 'int ', 'String ' )||
+    LOWER(COLUMN_NAME)||';'
+FROM COLS
+WHERE TABLE_NAME = 'BOARD'
+ORDER BY COLUMN_ID;
+
+쿼리 작성
+SELECT BOARD_NO, TITLE, CONTENT, 
+           B.REG_DATE, B.MEM_NO, CNT, NAME WRITER
+FROM BOARD B, MEMBER M
+WHERE B.MEM_NO = M.MEM_NO;
+
+쿼리작성2
+SELECT * 
+FROM (SELECT *
+            FROM (SELECT ROWNUM RN,
+                BOARD_NO, TITLE, CONTENT, 
+                 B.REG_DATE, B.MEM_NO, CNT, NAME WRITER
+                FROM BOARD B, MEMBER M
+                WHERE B.MEM_NO = M.MEM_NO
+                AND CODE_NO = 1
+                ORDER BY BOARD_NO DESC
+                ) A) A
+WHERE RN BETWEEN 21 AND 30;
