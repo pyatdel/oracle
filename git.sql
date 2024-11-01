@@ -907,3 +907,14 @@ FROM BOARD B, BOARD_CODE C,
 WHERE B.CODE_NO = C.CODE_NO
 AND B.MEM_NO = M.MEM_NO
 AND B.CODE_NO = 1;
+
+241101-React
+
+CREATE USER jspexam identified by java;
+
+grant connect, resource to jspexam;
+
+grant create view to jspexam;
+grant create sequence to jspexam;
+grant create procedure to jspexam;
+grant create trigger to jspexam;
