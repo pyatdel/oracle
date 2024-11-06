@@ -974,9 +974,94 @@ SELECT NVL(MAX(BOOK_ID),0)+1
 ALTER USER JSPEXAM DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
 
 SELECT BOOK_ID
-     , TITLE
-     , CATEGORY
-     , PRICE
-     , INSERT_DATE
-FROM   BOOK
+    , TITLE
+    , CATEGORY
+    , PRICE
+    , INSERT_DATE
+FROM BOOK
 WHERE BOOK_ID = 1;
+        
+241105 - Spring
+        
+-- 트랜잭션 : 데이터베이스 변경 수행 논리적 단위. 여러 개의 SQL로 구성. 
+--  ㄴ COMMIT, ROLLBACK
+UPDATE BOOK
+SET TITLE='개똥이의 일탈', CATEGORY = '소설', PRICE = 12000
+WHERE BOOK_ID = 1;
+
+-- SQL 중에서 TCL(Transcation Control Language)
+ROLLBACK;
+
+-- 등푸른생선 주세요
+DELETE FROM BOOK
+WHERE BOOK_ID = 3;
+
+/*
+    PL/SQL : Procedual(절차적인) Language(언어) / (로써의) SQL
+/*
+PL/SQL : Procedual(절차적인) Language(언어) / (로써의)
+*/
+CREATE TABLE BOOK_BAK
+AS
+SELECT * FROM BOOK;
+/
+DECLARE
+    --I NUMBER:=1;
+BEGIN
+    --WHERE절이 없는 DELETE문은 위험!
+    DELETE FROM BOOK;
+    COMMIT;
+
+    --I : 자동선언변수
+    FOR I IN 1..272 LOOP
+        INSERT INTO BOOK(BOOK_ID, TITLE, CATEGORY, PRICE, INSERT_DATE)
+        VALUES(I, '제목'||I, '소설'||I, 10000+I, SYSDATE); 
+    END LOOP;
+    COMMIT;
+END;
+/
+SELECT * FROM BOOK;SELECT BOOK_ID, TITLE, CATEGORY, PRICE, INSERT_DATE 
+FROM   BOOK
+ORDER BY BOOK_ID;
+/
+ROLLBACK;
+/
+
+
+DELETE FROM BOOK;
+COMMIT;
+
+
+-- 데이터 복구
+AS OF TIMESTAMP(SYSDATE-(1/24)/6);    -- 10분 전 데이터 조회
+
+241106 - Spring
+--- NOT AND OR
+SELECT BOOK_ID, TITLE, CATEGORY, PRICE, INSERT_DATE 
+		FROM   BOOK
+        WHERE 1 = 1  -- 이런 형태가 더 편하다
+        AND(  -- 1. 괄호 2. AND
+            TITLE LIKE '%01%'
+            OR CATEGORY LIKE '%01%'
+            OR PRICE LIKE '%01%')
+		ORDER BY BOOK_ID;
+
+-- 뭉
+SELECT BOOK_ID, TITLE, CATEGORY, PRICE, INSERT_DATE 
+		FROM   BOOK
+--        AND    TITLE LIKE '%제%'
+        AND CATEGORY LIKE '%설%'
+		ORDER BY BOOK_ID;
+        
+CREATE TABLE BOARD(
+    BO_NO      NUMBER,   
+    BO_TITLE   VARCHAR2(300),
+    BO_WRITER   VARCHAR2(150),
+    BO_CONTENT   VARCHAR2(4000),
+    BO_DATE   VARCHAR2(20),
+    BO_HIT   NUMBER,
+    CONSTRAINT PK_BOARD PRIMARY KEY(BO_NO)
+);
+
+SELECT * 
+    FROM BOARD;
