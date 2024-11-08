@@ -1065,3 +1065,49 @@ CREATE TABLE BOARD(
 
 SELECT * 
     FROM BOARD;
+    
+241107 - Spring
+
+INSERT INTO BOARD(BO_NO, BO_TITLE, BO_WRITER, BO_CONTENT, BO_DATE, BO_HIT)
+   		VALUES();
+-- 널 봐라
+SELECT NVL(MAX(BO_NO), 0) FROM BOARD;
+
+241108 - Spring
+
+SELECT BO_NO, BO_TITLE, BO_WRITER, BO_CONTENT, BO_DATE, BO_HIT
+FROM BOARD
+WHERE BO_NO - 1;
+
+Spring - pm
+
+CREATE USER SUMIN6 IDENTIFIED BY SUMIN6;
+
+GRANT CONNECT, RESOURCE, DBA TO SUMIN6;
+
+COMMIT;
+
+CREATE SEQUENCE SUMIN_SEQ;
+
+이 두 개는 알아두기
+SELECT SUMIN_SEQ.NEXTVAL FROM DUAL;
+
+이 두 개는 알아두기
+SELECT SUMIN_SEQ.CURRVAL FROM DUAL;
+
+INSERT INTO tb_idol (
+    idol_id,
+    idol_name,
+    idol_age,
+    idol_sajin
+) VALUES (
+    :v0,
+    :v1,
+    :v2,
+    :v3
+);
+
+copy MyBatis Statement 한 데이터
+
+INSERT INTO tb_idol ( idol_id, idol_name, idol_age, idol_sajin ) 
+VALUES ( sumin_seq.nextval, '수민10돌', 30, '사진 없대10' )
