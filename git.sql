@@ -1111,3 +1111,30 @@ copy MyBatis Statement 한 데이터
 
 INSERT INTO tb_idol ( idol_id, idol_name, idol_age, idol_sajin ) 
 VALUES ( sumin_seq.nextval, '수민10돌', 30, '사진 없대10' )
+
+241111 - Spring am
+
+업데이트 쎄대여
+UPDATE / DELETE 시 WHERE 확인
+UPDATE BOARD
+SET BO_NO = ' ', BO_TITLE= ' ', BO_WRITER= ' '
+WHERE BO_NO = 1;
+
+UPDATE/DELETE를 하기 전에, 꼭 SELECT로 확인을 하자
+SELECT * 
+FROM BOARD
+WHERE BO_NO = 1;
+
+241111 - Spring pm
+
+UPDATE TB_IDOL
+SET
+    idol_name = '진찬전',
+    idol_age = 19,
+    idol_sajin = '비싸'
+WHERE
+    idol_id = 3;
+
+DELETE 
+    FROM TB_IDOL
+WHERE idol_id = 3;
