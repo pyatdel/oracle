@@ -1138,3 +1138,122 @@ WHERE
 DELETE 
     FROM TB_IDOL
 WHERE idol_id = 3;
+
+
+241112 - Spring am
+
+-- 서브쿼리 : 메인 SQL에 사용된 또다른 쿼리
+--1) SELECT 절 : SCALAR
+--2) FROM 절  : INLINE VIEW
+--3) WHERE 절 : NESTED
+-- total : 277
+SELECT COUNT(*) FROM BOARD;
+
+ex) SELECT T.RNUM, T.BO_NO, T.BO_TITLE, T.BO_WRITER
+     , T.BO_CONTENT, T.BO_DATE, T.BO_HIT
+FROM
+(
+    SELECT ROW_NUMBER() OVER(ORDER BY BO_NO) RNUM
+         , BO_NO, BO_TITLE, BO_WRITER, BO_CONTENT, BO_DATE, BO_HIT
+    FROM   BOARD
+) T
+WHERE  T.RNUM BETWEEN (1*10)-9 AND (1*10);
+                                        --(현재페이지번호*10)-9, (현재페이지번호*10)
+-- INLINE VIEW
+SELECT ROW_NUMBER() OVER(ORDER BY BO_NO) RNUM 
+    , BO_NO, BO_TITLE, BO_WRITER, BO_CONTENT, BO_DATE, BO_HIT
+FROM   BOARD;
+/
+SET SERVEROUTPUT ON;
+/
+DECLARE
+    V_BO_NO NUMBER;
+BEGIN
+    --BOARD 테이블에 마지막 BO_NO를 구해보자
+    SELECT NVL(MAX(BO_NO),0) INTO V_BO_NO
+    FROM   BOARD;
+    
+    --I : 자동선언 정수형 변수
+    FOR I IN 1..272 LOOP
+        DBMS_OUTPUT.PUT_LINE('개똥이' || (V_BO_NO + I));
+        
+        INSERT INTO BOARD(BO_NO, BO_TITLE, BO_WRITER, BO_CONTENT, BO_DATE, BO_HIT)
+        VALUES((V_BO_NO + I)
+            ,'제목'||(V_BO_NO + I)
+            ,'작성자'||(V_BO_NO + I)
+            ,'내용'||(V_BO_NO + I)
+            , SYSDATE
+            , 0
+            );
+    END LOOP;
+    COMMIT;
+END;
+/
+SELECT * FROM BOARD;
+
+241112 - Spring pm
+
+UPDATE tb_idol
+SET
+    idol_sajin = '/jcmc/11.PNG';
+    
+COMMIT;
+
+241116 - Spring am
+
+CREATE TABLE STUD(
+    EMAIL VARCHAR2(100),
+    PASSWORD VARCHAR2(100),
+    REMEMBER_ME VARCHAR2(1),
+    CONSTRAINT PK_STUD PRIMARY KEY(EMAIL)
+);
+
+--카멜변환
+SELECT COLUMN_NAME
+, DATA_TYPE
+, CASE WHEN DATA_TYPE='NUMBER' THEN 'private int ' || FN_GETCAMEL(COLUMN_NAME) || ';'
+WHEN DATA_TYPE IN('VARCHAR2','CHAR') THEN 'private String ' || FN_GETCAMEL(COLUMN_NAME) || ';'
+WHEN DATA_TYPE='DATE' THEN 'private Date ' || FN_GETCAMEL(COLUMN_NAME) || ';'
+ELSE 'private String ' || FN_GETCAMEL(COLUMN_NAME) || ';'
+END AS CAMEL_CASE
+, '<result property="'||FN_GETCAMEL(COLUMN_NAME)||'" column="'||COLUMN_NAME||'"/>' RESULTMAP
+FROM ALL_TAB_COLUMNS
+WHERE TABLE_NAME = 'STUD'
+AND    OWNER = 'JSPEXAM';
+
+SELECT 
+    'private '||
+   DECODE( DATA_TYPE , 'NUMBER', 'int ', 'String ' )||
+    LOWER(COLUMN_NAME)||';'
+FROM COLS
+WHERE TABLE_NAME = 'STUD'
+ORDER BY COLUMN_ID;
+
+--File_GroupVO
+--관계 : RELATION
+--데이터베이스 : DATABASE
+--RDB : 관계형 데이터베이스(공유, 저장, 통합, 운영)
+--RDBS : 관계형 데이터베이스 관리 시스템(오라클)
+CREATE TABLE FILE_GROUP(
+    FILE_GROUP_NO NUMBER,
+    FILE_REGDATE DATE,
+    CONSTRAINT PK_FG PRIMARY KEY(FILE_GROUP_NO)
+);
+--File_DetailVO
+
+CREATE TABLE FILE_DETAIL(
+    FILE_SN NUMBER,        
+    FILE_GROUP_NO NUMBER,   
+    FILE_ORIGINAL_NAME VARCHAR2(300),
+    FILE_SAVE_NAME VARCHAR2(300),
+    FILE_SAVE_LOCATE VARCHAR2(300),
+    FILE_SIZE NUMBER,  
+    FILE_EXT VARCHAR2(30),
+    FILE_MIME VARCHAR2(30),
+    FILE_FANCYSIZE VARCHAR2(30),
+    FILE_SAVE_DATE DATE,
+    FILE_DOWNCOUNT NUMBER,
+    CONSTRAINT PK_FD PRIMARY KEY(FILE_SN, FILE_GROUP_NO),
+    CONSTRAINT FK_FD FOREIGN KEY(FILE_GROUP_NO)
+                     REFERENCES FILE_GROUP(FILE_GROUP_NO)
+);
